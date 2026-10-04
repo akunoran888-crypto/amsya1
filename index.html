@@ -1,0 +1,4017 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(self)">
+<title>MINZX CHAT</title>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+:root{
+    --bg:#e9e6df;
+    --panel:#f4f1eb;
+    --card:#fff;
+    --text:#111;
+    --muted:#666;
+    --line:#111;
+    --accent:#dfff00;
+    --accent2:#b9d900;
+    --danger:#ff4545;
+}
+
+body{
+    margin:0;
+    background:#111;
+    color:var(--text);
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+button,input,textarea{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.app{
+    width:100%;
+    max-width:430px;
+    min-height:100vh;
+    margin:auto;
+    background:var(--bg);
+    position:relative;
+    overflow:hidden;
+}
+
+.screen{
+    min-height:100vh;
+    display:none;
+    flex-direction:column;
+}
+
+.screen.active{
+    display:flex;
+}
+
+/* AUTH */
+
+.auth{
+    padding:24px;
+    justify-content:center;
+}
+
+.logo{
+    font-size:48px;
+    line-height:.85;
+    font-weight:1000;
+    letter-spacing:-3px;
+    margin-bottom:10px;
+}
+
+.logo span{
+    background:var(--accent);
+    border:4px solid #111;
+    padding:2px 8px;
+    display:inline-block;
+    box-shadow:6px 6px 0 #111;
+}
+
+.subtitle{
+    font-weight:700;
+    margin-bottom:30px;
+}
+
+.box{
+    background:var(--card);
+    border:4px solid #111;
+    box-shadow:7px 7px 0 #111;
+    padding:16px;
+    margin-bottom:20px;
+}
+
+.title{
+    font-size:25px;
+    font-weight:1000;
+    text-transform:uppercase;
+    margin-bottom:15px;
+}
+
+.input{
+    width:100%;
+    height:48px;
+    border:3px solid #111;
+    background:#fff;
+    padding:0 12px;
+    margin-bottom:10px;
+    outline:none;
+}
+
+.input:focus{
+    box-shadow:4px 4px 0 var(--accent);
+}
+
+.btn{
+    min-height:45px;
+    border:3px solid #111;
+    background:var(--accent);
+    font-weight:1000;
+    padding:8px 14px;
+    box-shadow:4px 4px 0 #111;
+}
+
+.btn:active{
+    transform:translate(3px,3px);
+    box-shadow:1px 1px 0 #111;
+}
+
+.btn.full{
+    width:100%;
+}
+
+.btn.secondary{
+    background:#fff;
+}
+
+.btn.danger{
+    background:var(--danger);
+}
+
+.server-box{
+    border:3px solid #111;
+    background:#ddd;
+    padding:10px;
+    font-size:13px;
+    margin-top:15px;
+}
+
+.status-dot{
+    display:inline-block;
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#f00;
+    margin-right:5px;
+}
+
+.status-dot.online{
+    background:#19b900;
+}
+
+/* HEADER */
+
+.top{
+    height:65px;
+    border-bottom:4px solid #111;
+    background:var(--panel);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 12px;
+    flex-shrink:0;
+}
+
+.brand{
+    font-size:25px;
+    font-weight:1000;
+    letter-spacing:-1px;
+}
+
+.brand small{
+    display:block;
+    font-size:9px;
+    letter-spacing:1px;
+}
+
+.icon-btn{
+    width:42px;
+    height:42px;
+    border:3px solid #111;
+    background:#fff;
+    font-size:20px;
+    font-weight:900;
+}
+
+/* CONTENT */
+
+.content{
+    flex:1;
+    overflow-y:auto;
+    padding:12px;
+    padding-bottom:82px;
+}
+
+.section-title{
+    font-size:17px;
+    font-weight:1000;
+    margin:12px 0 8px;
+    text-transform:uppercase;
+}
+
+.search{
+    width:100%;
+    height:45px;
+    border:3px solid #111;
+    padding:0 12px;
+    margin-bottom:12px;
+    background:#fff;
+}
+
+/* CONTACT */
+
+.user-card{
+    background:#fff;
+    border:3px solid #111;
+    padding:10px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:9px;
+}
+
+.avatar{
+    width:48px;
+    height:48px;
+    min-width:48px;
+    border:3px solid #111;
+    background:var(--accent);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:1000;
+    font-size:18px;
+}
+
+.user-info{
+    flex:1;
+    min-width:0;
+}
+
+.user-name{
+    font-weight:1000;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.user-sub{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:3px;
+}
+
+.online{
+    color:#0a8f00;
+    font-weight:bold;
+}
+
+.offline{
+    color:#777;
+}
+
+/* BOTTOM */
+
+.bottom{
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
+    height:72px;
+    border-top:4px solid #111;
+    background:#fff;
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    z-index:30;
+}
+
+.nav{
+    border:0;
+    border-right:2px solid #111;
+    background:#fff;
+    font-size:11px;
+    font-weight:1000;
+}
+
+.nav:last-child{
+    border-right:0;
+}
+
+.nav.active{
+    background:var(--accent);
+}
+
+/* CHAT */
+
+.chat-screen{
+    background:var(--bg);
+}
+
+.chat-head{
+    height:65px;
+    background:#fff;
+    border-bottom:4px solid #111;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px;
+    flex-shrink:0;
+}
+
+.back{
+    width:40px;
+    height:40px;
+    border:3px solid #111;
+    background:var(--accent);
+    font-weight:1000;
+}
+
+.chat-user{
+    flex:1;
+}
+
+.chat-name{
+    font-weight:1000;
+}
+
+.chat-status{
+    font-size:11px;
+}
+
+.chat-body{
+    flex:1;
+    overflow-y:auto;
+    padding:12px;
+}
+
+.msg{
+    max-width:78%;
+    border:3px solid #111;
+    padding:9px 11px;
+    margin-bottom:9px;
+    background:#fff;
+    box-shadow:3px 3px 0 #111;
+    word-wrap:break-word;
+}
+
+.msg.mine{
+    margin-left:auto;
+    background:var(--accent);
+}
+
+.msg-time{
+    font-size:9px;
+    text-align:right;
+    margin-top:5px;
+    opacity:.65;
+}
+
+.chat-input{
+    border-top:4px solid #111;
+    background:#fff;
+    padding:8px;
+    display:flex;
+    gap:7px;
+    flex-shrink:0;
+}
+
+.chat-input textarea{
+    flex:1;
+    min-height:43px;
+    max-height:110px;
+    resize:none;
+    border:3px solid #111;
+    padding:8px;
+    outline:none;
+}
+
+.send{
+    width:48px;
+    border:3px solid #111;
+    background:var(--accent);
+    font-size:20px;
+    font-weight:1000;
+}
+
+/* STATUS */
+
+.status-card{
+    background:#fff;
+    border:3px solid #111;
+    padding:10px;
+    margin-bottom:10px;
+}
+
+.status-media{
+    width:100%;
+    max-height:360px;
+    object-fit:cover;
+    border:3px solid #111;
+    margin-top:8px;
+}
+
+.status-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+/* SETTINGS */
+
+.setting{
+    background:#fff;
+    border:3px solid #111;
+    padding:12px;
+    margin-bottom:9px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.setting-info{
+    flex:1;
+}
+
+.setting-title{
+    font-weight:1000;
+}
+
+.setting-desc{
+    font-size:11px;
+    color:#666;
+    margin-top:3px;
+}
+
+.toggle{
+    width:48px;
+    height:28px;
+    border:3px solid #111;
+    background:#ccc;
+    position:relative;
+}
+
+.toggle::after{
+    content:"";
+    width:18px;
+    height:18px;
+    background:#111;
+    position:absolute;
+    left:2px;
+    top:2px;
+}
+
+.toggle.on{
+    background:var(--accent);
+}
+
+.toggle.on::after{
+    left:22px;
+}
+
+/* MODAL */
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.65);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:20px;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.modal-box{
+    width:100%;
+    max-width:400px;
+    background:var(--bg);
+    border:4px solid #111;
+    box-shadow:8px 8px 0 #111;
+    padding:15px;
+}
+
+.modal-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+}
+
+.close{
+    width:38px;
+    height:38px;
+    border:3px solid #111;
+    background:#fff;
+    font-weight:1000;
+}
+
+/* TOAST */
+
+.toast{
+    position:fixed;
+    left:50%;
+    bottom:90px;
+    transform:translateX(-50%);
+    background:#111;
+    color:#fff;
+    padding:10px 14px;
+    border:3px solid #fff;
+    z-index:200;
+    display:none;
+    max-width:90%;
+    text-align:center;
+}
+
+.toast.show{
+    display:block;
+}
+
+/* LOADING */
+
+.loading{
+    position:fixed;
+    inset:0;
+    background:#111;
+    color:#fff;
+    z-index:500;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    text-align:center;
+}
+
+.loading.show{
+    display:flex;
+}
+
+.spinner{
+    width:45px;
+    height:45px;
+    border:5px solid #555;
+    border-top-color:var(--accent);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+    margin-bottom:15px;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+
+.empty{
+    text-align:center;
+    padding:40px 10px;
+    color:#666;
+    font-weight:bold;
+}
+
+/* MEDIA / PERMISSIONS */
+.media-tools{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin:10px 0;
+}
+.media-btn{
+    border:3px solid #111;
+    background:#fff;
+    padding:10px 6px;
+    font-weight:900;
+    min-height:58px;
+}
+.media-btn:active{
+    transform:translate(2px,2px);
+}
+.permission-box{
+    background:#fff;
+    border:3px solid #111;
+    padding:12px;
+    margin-bottom:10px;
+}
+.permission-status{
+    font-size:12px;
+    line-height:1.5;
+    color:#555;
+}
+.permission-ok{
+    color:#087a16;
+    font-weight:900;
+}
+.permission-warn{
+    color:#9a5b00;
+    font-weight:900;
+}
+
+.hidden{
+    display:none!important;
+}
+
+/* ===== MINZX CHAT V2 UI ===== */
+body{background:#080808}
+.app{box-shadow:0 0 0 2px #111}
+.top{position:relative}
+.top-actions{display:flex;gap:6px;align-items:center}
+.quick-btn{height:38px;min-width:38px;border:3px solid #111;background:#fff;font-weight:1000}
+.hero-card{background:#111;color:#fff;border:4px solid #111;padding:14px;margin-bottom:12px;box-shadow:6px 6px 0 var(--accent)}
+.hero-card b{font-size:22px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.stat{background:#fff;color:#111;border:3px solid #111;padding:8px;text-align:center}
+.stat b{display:block;font-size:18px}.stat small{font-size:9px;font-weight:900}
+.profile-actions{display:flex;gap:7px;margin-top:12px}.profile-actions .btn{flex:1}
+.profile-bio{border:3px solid #111;background:#fff;padding:10px;margin-top:10px}
+.search-row{display:flex;gap:7px;margin-bottom:10px}.search-row .search{margin:0;flex:1}
+.fab{position:absolute;right:12px;bottom:84px;width:55px;height:55px;border:4px solid #111;background:var(--accent);font-size:25px;font-weight:1000;box-shadow:5px 5px 0 #111;z-index:25}
+.global-msg{border:3px solid #111;background:#fff;padding:9px;margin-bottom:8px;box-shadow:3px 3px 0 #111}
+.global-msg.mine{background:var(--accent)}
+.global-meta{font-size:10px;font-weight:900;margin-bottom:4px}.global-time{font-size:9px;text-align:right;opacity:.6;margin-top:4px}
+.reaction-row{display:flex;gap:5px;margin-top:7px}.reaction{border:2px solid #111;background:#fff;padding:3px 7px;font-size:12px}
+.setting-section{font-size:13px;font-weight:1000;margin:18px 0 8px;padding:6px 8px;background:#111;color:#fff}
+.setting.clickable{cursor:pointer}.setting-value{font-size:11px;font-weight:900;color:#555}
+.switch-line{display:flex;align-items:center;gap:8px}.danger-text{color:#d00000;font-weight:1000}
+.profile-mini{display:flex;align-items:center;gap:10px;background:#fff;border:3px solid #111;padding:10px;margin-bottom:10px}
+.profile-mini .avatar{width:55px;height:55px}
+@media(min-width:431px){body{padding:0 10px}.app{min-height:100vh}}
+
+
+/* GACOR UI additions */
+.user-actions{display:flex;align-items:center;gap:5px}.profile-mini{display:flex;align-items:center;gap:12px;padding:8px 0}.avatar-big{width:70px!important;height:70px!important;font-size:28px!important}.profile-stats{display:flex;gap:8px;margin:12px 0}.profile-stats>div{flex:1;text-align:center;border:3px solid #111;background:#fff;padding:9px}.profile-stats b{display:block;font-size:18px}.profile-stats small{font-size:10px}.profile-bio{border:3px solid #111;background:#fff;padding:10px;margin:8px 0}.profile-actions{display:flex;gap:8px}.profile-actions>*{flex:1}.select{border:3px solid #111;background:#fff;padding:8px;font-weight:800;max-width:150px}.top-actions{display:flex;gap:6px}.global-msg{border:3px solid #111;background:#fff;padding:10px;margin-bottom:9px;box-shadow:3px 3px 0 #111}.global-msg.mine{background:var(--accent)}.global-meta{font-weight:1000;font-size:12px}.global-time{font-size:10px;color:#666;margin-top:5px;text-align:right}.permission-box{border:3px solid #111;background:#fff;padding:12px;margin-bottom:12px}.media-tools{display:flex;gap:7px;margin-top:10px}.media-btn{flex:1;border:3px solid #111;background:#fff;padding:9px;font-weight:900}.quick-btn{height:38px;min-width:38px;border:3px solid #111;background:#fff;font-weight:1000}.hero-card{background:#111;color:#fff;border:4px solid #111;padding:14px;margin-bottom:12px;box-shadow:6px 6px 0 var(--accent)}.hero-card b{font-size:22px}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- ================= AUTH ================= -->
+
+<section id="authScreen" class="screen auth active">
+
+    <div class="logo">
+        <span>MINZX</span>
+        <br>
+        <span>CHAT</span>
+    </div>
+
+    <div class="subtitle">
+        Chat realtime dalam satu jaringan Wi-Fi
+    </div>
+
+    <div class="box">
+
+        <div class="title" id="authTitle">Masuk</div>
+
+        <input
+            id="usernameInput"
+            class="input"
+            placeholder="Username"
+            autocomplete="username"
+        >
+
+        <input
+            id="passwordInput"
+            class="input"
+            type="password"
+            placeholder="Password"
+            autocomplete="current-password"
+        >
+
+        <button id="loginBtn" class="btn full" onclick="login()">
+            MASUK
+        </button>
+
+        <button
+            id="registerBtn"
+            class="btn secondary full"
+            style="margin-top:10px"
+            onclick="register()">
+            BUAT AKUN
+        </button>
+
+        <div class="server-box">
+            <b>SERVER</b><br>
+            <span id="serverText">Mendeteksi...</span>
+            <br><br>
+            <span>
+                <i id="serverDot" class="status-dot"></i>
+                <span id="serverStatus">Offline</span>
+            </span>
+        </div>
+
+        <button
+            class="btn secondary full"
+            style="margin-top:10px"
+            onclick="openServerModal()">
+            ⚙ UBAH SERVER
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ================= HOME ================= -->
+
+<section id="homeScreen" class="screen">
+
+    <header class="top">
+        <div class="brand">
+            MINZX CHAT
+            <small>REALTIME CHAT</small>
+        </div>
+
+        <button class="icon-btn" onclick="openSettings()">⚙</button>
+    </header>
+
+    <main class="content">
+
+        <div class="section-title">Status</div>
+
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+
+            <button class="btn" onclick="openAddStatus()">
+                ＋ STATUS
+            </button>
+
+            <button class="btn secondary" onclick="loadStatuses()">
+                ↻
+            </button>
+
+        </div>
+
+        <div id="statusList"></div>
+
+        <div class="section-title">Pengguna</div>
+
+        <input
+            id="homeSearch"
+            class="search"
+            placeholder="Cari username..."
+            oninput="renderUsers()"
+        >
+
+        <div id="usersList"></div>
+
+    </main>
+
+    <nav class="bottom">
+
+        <button class="nav active" onclick="showHome()">
+            🏠<br>Home
+        </button>
+
+        <button class="nav" onclick="showChats()">
+            💬<br>Chat
+        </button>
+
+        <button class="nav" onclick="showSearch()">
+            🔎<br>Cari
+        </button>
+
+        <button class="nav" onclick="showStatus()">
+            ◉<br>Status
+        </button>
+
+        <button class="nav" onclick="showProfile()">
+            👤<br>Saya
+        </button>
+
+    </nav>
+
+</section>
+
+
+<!-- ================= CHAT LIST ================= -->
+
+<section id="chatListScreen" class="screen">
+
+    <header class="top">
+        <div class="brand">CHAT<small>PRIVATE CHAT</small></div>
+        <div class="top-actions"><button class="quick-btn" onclick="showSearch()">＋</button></div>
+    </header>
+
+    <main class="content">
+
+        <input
+            id="chatSearch"
+            class="search"
+            placeholder="Cari chat..."
+            oninput="renderChats()"
+        >
+
+        <div id="chatList"></div>
+
+    </main>
+
+    <nav class="bottom">
+
+        <button class="nav" onclick="showHome()">🏠<br>Home</button>
+        <button class="nav active" onclick="showChats()">💬<br>Chat</button>
+        <button class="nav" onclick="showSearch()">🔎<br>Cari</button>
+        <button class="nav" onclick="showStatus()">◉<br>Status</button>
+        <button class="nav" onclick="showProfile()">👤<br>Saya</button>
+
+    </nav>
+
+</section>
+
+
+<!-- ================= SEARCH ================= -->
+
+<section id="searchScreen" class="screen">
+
+    <header class="top">
+        <div class="brand">CARI USER</div>
+    </header>
+
+    <main class="content">
+
+        <input
+            id="searchInput"
+            class="search"
+            placeholder="Cari username..."
+            oninput="renderSearch()"
+        >
+
+        <div id="searchResults"></div>
+
+    </main>
+
+    <nav class="bottom">
+
+        <button class="nav" onclick="showHome()">🏠<br>Home</button>
+        <button class="nav" onclick="showChats()">💬<br>Chat</button>
+        <button class="nav active" onclick="showSearch()">🔎<br>Cari</button>
+        <button class="nav" onclick="showStatus()">◉<br>Status</button>
+        <button class="nav" onclick="showProfile()">👤<br>Saya</button>
+
+    </nav>
+
+</section>
+
+
+<!-- ================= STATUS ================= -->
+
+<section id="statusScreen" class="screen">
+
+    <header class="top">
+        <div class="brand">STATUS</div>
+
+        <button class="icon-btn" onclick="openAddStatus()">＋</button>
+    </header>
+
+    <main class="content">
+
+        <div id="allStatusList"></div>
+
+    </main>
+
+    <nav class="bottom">
+
+        <button class="nav" onclick="showHome()">🏠<br>Home</button>
+        <button class="nav" onclick="showChats()">💬<br>Chat</button>
+        <button class="nav" onclick="showSearch()">🔎<br>Cari</button>
+        <button class="nav active" onclick="showStatus()">◉<br>Status</button>
+        <button class="nav" onclick="showProfile()">👤<br>Saya</button>
+
+    </nav>
+
+</section>
+
+
+
+<!-- ================= GLOBAL ================= -->
+<section id="globalScreen" class="screen">
+  <header class="top">
+    <div class="brand">GLOBAL<small>CHAT SEMUA PENGGUNA</small></div>
+    <div class="top-actions"><button class="quick-btn" onclick="showSearch()">🔎</button></div>
+  </header>
+  <main class="content">
+    <div class="hero-card"><b>🌐 Global Chat</b><br><small>Ruang obrolan bersama semua pengguna.</small></div>
+    <div id="globalBody"></div>
+  </main>
+  <div class="chat-input">
+    <textarea id="globalInput" placeholder="Tulis ke global..." rows="1" onkeydown="globalKey(event)"></textarea>
+    <button class="send" onclick="sendGlobalMessage()">➤</button>
+  </div>
+  <nav class="bottom">
+    <button class="nav" onclick="showHome()">🏠<br>Home</button>
+    <button class="nav" onclick="showChats()">💬<br>Chat</button>
+    <button class="nav active" onclick="showGlobal()">🌐<br>Global</button>
+    <button class="nav" onclick="showStatus()">◉<br>Status</button>
+    <button class="nav" onclick="showProfile()">👤<br>Saya</button>
+  </nav>
+</section>
+
+<!-- ================= PROFILE ================= -->
+
+<section id="profileScreen" class="screen">
+
+    <header class="top">
+        <div class="brand">SAYA</div>
+    </header>
+
+    <main class="content">
+
+        <div class="box">
+
+            <div style="display:flex;gap:12px;align-items:center">
+
+                <div class="avatar" id="profileAvatar">
+                    M
+                </div>
+
+                <div>
+                    <div class="user-name" id="profileName">
+                        -
+                    </div>
+
+                    <div class="user-sub">
+                        Akun MINZX CHAT
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="section-title">
+            Akun
+        </div>
+
+        <div class="setting" onclick="changeUsername()">
+            <div class="setting-info">
+                <div class="setting-title">Username</div>
+                <div class="setting-desc">
+                    Ubah nama pengguna
+                </div>
+            </div>
+            ✎
+        </div>
+
+        <div class="setting" onclick="openServerModal()">
+            <div class="setting-info">
+                <div class="setting-title">Server</div>
+                <div class="setting-desc" id="profileServer">
+                    -
+                </div>
+            </div>
+            ⚙
+        </div>
+
+        <button
+            class="btn danger full"
+            onclick="logout()">
+            KELUAR
+        </button>
+
+    </main>
+
+    <nav class="bottom">
+
+        <button class="nav" onclick="showHome()">🏠<br>Home</button>
+        <button class="nav" onclick="showChats()">💬<br>Chat</button>
+        <button class="nav" onclick="showSearch()">🔎<br>Cari</button>
+        <button class="nav" onclick="showStatus()">◉<br>Status</button>
+        <button class="nav active" onclick="showProfile()">👤<br>Saya</button>
+
+    </nav>
+
+</section>
+
+
+<!-- ================= SETTINGS ================= -->
+
+<section id="settingsScreen" class="screen">
+
+    <header class="top">
+
+        <button class="back" onclick="showProfile()">←</button>
+
+        <div class="brand">
+            PENGATURAN
+        </div>
+
+        <div style="width:40px"></div>
+
+    </header>
+
+    <main class="content">
+
+        <div class="section-title">
+            Tampilan
+        </div>
+
+        <div class="setting" onclick="setTheme('yellow')">
+            <div class="setting-info">
+                <div class="setting-title">Tema Kuning</div>
+                <div class="setting-desc">Tema utama MINZX</div>
+            </div>
+            🟡
+        </div>
+
+        <div class="setting" onclick="setTheme('green')">
+            <div class="setting-info">
+                <div class="setting-title">Tema Hijau</div>
+            </div>
+            🟢
+        </div>
+
+        <div class="setting" onclick="setTheme('purple')">
+            <div class="setting-info">
+                <div class="setting-title">Tema Ungu</div>
+            </div>
+            🟣
+        </div>
+
+        <div class="setting" onclick="setTheme('dark')">
+            <div class="setting-info">
+                <div class="setting-title">Tema Gelap</div>
+            </div>
+            ⚫
+        </div>
+
+
+        <div class="section-title">
+            Chat
+        </div>
+
+        <div class="setting">
+
+            <div class="setting-info">
+                <div class="setting-title">
+                    Enter untuk kirim
+                </div>
+
+                <div class="setting-desc">
+                    Tekan Enter untuk mengirim pesan
+                </div>
+            </div>
+
+            <button
+                id="enterToggle"
+                class="toggle on"
+                onclick="toggleSetting(this,'enterSend')">
+            </button>
+
+        </div>
+
+
+        <div class="setting">
+
+            <div class="setting-info">
+                <div class="setting-title">
+                    Sembunyikan status mengetik
+                </div>
+
+                <div class="setting-desc">
+                    Tidak mengirim indikator typing
+                </div>
+            </div>
+
+            <button
+                id="typingToggle"
+                class="toggle"
+                onclick="toggleSetting(this,'hideTyping')">
+            </button>
+
+        </div>
+
+
+        <div class="setting">
+
+            <div class="setting-info">
+                <div class="setting-title">
+                    Centang biru
+                </div>
+
+                <div class="setting-desc">
+                    Tampilan status pesan
+                </div>
+            </div>
+
+            <button
+                id="readToggle"
+                class="toggle on"
+                onclick="toggleSetting(this,'readReceipts')">
+            </button>
+
+        </div>
+
+
+        <div class="section-title">
+            Kamera, Mikrofon & Media
+        </div>
+
+        <div class="permission-box">
+            <div class="setting-title">Izin perangkat</div>
+            <div id="permissionStatus" class="permission-status">Belum dicek.</div>
+
+            <div class="media-tools">
+                <button type="button" class="media-btn" onclick="requestCameraPermission()">📷<br>KAMERA</button>
+                <button type="button" class="media-btn" onclick="requestMicrophonePermission()">🎙️<br>MIC</button>
+                <button type="button" class="media-btn" onclick="openMediaPicker()">📁<br>MEDIA</button>
+            </div>
+        </div>
+
+        <div class="section-title">
+            PRIVASI & AKUN
+        </div>
+
+        <div class="setting">
+            <div class="setting-info"><div class="setting-title">Status online</div><div class="setting-desc">Tampilkan saat kamu sedang online</div></div>
+            <button id="onlineToggle" class="toggle on" onclick="toggleSetting(this,'onlineStatus')"></button>
+        </div>
+
+        <div class="setting">
+            <div class="setting-info"><div class="setting-title">Notifikasi pesan</div><div class="setting-desc">Izinkan pemberitahuan pesan masuk</div></div>
+            <button id="notifToggle" class="toggle on" onclick="toggleSetting(this,'notifications')"></button>
+        </div>
+
+        <div class="setting">
+            <div class="setting-info"><div class="setting-title">Suara pesan</div><div class="setting-desc">Bunyikan notifikasi pesan</div></div>
+            <button id="soundToggle" class="toggle on" onclick="toggleSetting(this,'messageSound')"></button>
+        </div>
+
+        <div class="setting">
+            <div class="setting-info"><div class="setting-title">Getar</div><div class="setting-desc">Getarkan perangkat saat pesan masuk</div></div>
+            <button id="vibrateToggle" class="toggle on" onclick="toggleSetting(this,'vibration')"></button>
+        </div>
+
+        <div class="setting">
+            <div class="setting-info"><div class="setting-title">Auto-download media</div><div class="setting-desc">Muat foto/video secara otomatis</div></div>
+            <button id="mediaToggle" class="toggle on" onclick="toggleSetting(this,'autoMedia')"></button>
+        </div>
+
+        <div class="setting">
+            <div class="setting-info"><div class="setting-title">Siapa yang boleh follow</div><div class="setting-desc">Atur privasi follow</div></div>
+            <select id="followPrivacy" class="select" onchange="savePrivacySelect('followPrivacy')">
+                <option value="everyone">Semua orang</option>
+                <option value="following">Hanya yang kamu ikuti</option>
+                <option value="nobody">Tidak ada</option>
+            </select>
+        </div>
+
+        <div class="setting" onclick="showBlockedUsers()">
+            <div class="setting-info"><div class="setting-title">Akun diblokir</div><div class="setting-desc">Kelola pengguna yang diblokir</div></div>
+            🚫
+        </div>
+
+        <div class="setting" onclick="setAppPin()">
+            <div class="setting-info"><div class="setting-title">PIN aplikasi</div><div class="setting-desc">Simpan PIN lokal untuk perlindungan aplikasi</div></div>
+            🔐
+        </div>
+
+        <div class="section-title">
+            Media
+        </div>
+
+        <div class="setting" onclick="testNotification()">
+            <div class="setting-info"><div class="setting-title">Tes notifikasi</div><div class="setting-desc">Coba notifikasi perangkat</div></div>
+            🔔
+        </div>
+
+        <div class="section-title">
+            Data
+        </div>
+
+        <div class="setting" onclick="clearLocalData()">
+
+            <div class="setting-info">
+                <div class="setting-title">
+                    Hapus cache lokal
+                </div>
+
+                <div class="setting-desc">
+                    Hapus pengaturan dan data login dari perangkat
+                </div>
+            </div>
+
+            🗑
+
+        </div>
+
+    </main>
+
+</section>
+
+
+<!-- ================= CHAT ================= -->
+
+<section id="chatScreen" class="screen chat-screen">
+
+    <header class="chat-head">
+
+        <button class="back" onclick="closeChat()">←</button>
+
+        <div class="avatar" id="chatAvatar">
+            U
+        </div>
+
+        <div class="chat-user">
+
+            <div class="chat-name" id="chatName">
+                -
+            </div>
+
+            <div class="chat-status" id="chatStatus">
+                Offline
+            </div>
+
+        </div>
+
+    </header>
+
+    <main id="chatBody" class="chat-body"></main>
+
+    <div class="chat-input">
+
+        <textarea
+            id="messageInput"
+            placeholder="Tulis pesan..."
+            rows="1"
+            oninput="typingChanged()"
+            onkeydown="messageKey(event)"
+        ></textarea>
+
+        <button class="send" onclick="sendMessage()">
+            ➤
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ================= ADD STATUS ================= -->
+
+<div id="statusModal" class="modal">
+
+    <div class="modal-box">
+
+        <div class="modal-head">
+
+            <div class="title" style="margin:0">
+                STATUS
+            </div>
+
+            <button
+                class="close"
+                onclick="closeModal('statusModal')">
+                ×
+            </button>
+
+        </div>
+
+        <textarea
+            id="statusText"
+            class="input"
+            rows="4"
+            style="height:100px;padding-top:10px"
+            placeholder="Tulis status..."
+        ></textarea>
+
+        <input
+            id="statusFile"
+            class="input"
+            type="file"
+            accept="image/*,video/*,audio/*"
+        >
+
+        <div class="media-tools">
+            <button type="button" class="media-btn" onclick="openCameraPhoto()">📷<br>FOTO</button>
+            <button type="button" class="media-btn" onclick="openCameraVideo()">🎥<br>VIDEO</button>
+            <button type="button" class="media-btn" onclick="openMediaPicker()">📁<br>FILE</button>
+        </div>
+
+        <input id="cameraPhotoInput" type="file" accept="image/*" capture="environment" hidden onchange="useCapturedFile(this)">
+        <input id="cameraVideoInput" type="file" accept="video/*" capture="environment" hidden onchange="useCapturedFile(this)">
+
+        <button
+            class="btn full"
+            onclick="uploadStatus()">
+            POST STATUS
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ================= SERVER MODAL ================= -->
+
+<div id="serverModal" class="modal">
+
+    <div class="modal-box">
+
+        <div class="modal-head">
+
+            <div class="title" style="margin:0">
+                SERVER
+            </div>
+
+            <button
+                class="close"
+                onclick="closeModal('serverModal')">
+                ×
+            </button>
+
+        </div>
+
+        <p style="font-size:13px">
+            Masukkan alamat server MINZX CHAT.
+        </p>
+
+        <input
+            id="serverInput"
+            class="input"
+            placeholder="http://192.168.1.3:3001"
+        >
+
+        <button
+            class="btn full"
+            onclick="saveServer()">
+            SIMPAN & CEK
+        </button>
+
+        <button
+            class="btn secondary full"
+            style="margin-top:10px"
+            onclick="useCurrentServer()">
+            GUNAKAN SERVER INI
+        </button>
+
+        <div class="server-box">
+            <b>Contoh:</b><br><br>
+
+            HP server sendiri:
+            <br>
+            <code>http://127.0.0.1:3001</code>
+
+            <br><br>
+
+            HP lain dalam Wi-Fi:
+            <br>
+            <code>http://192.168.1.3:3001</code>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= LOADING ================= -->
+
+<div id="loading" class="loading">
+
+    <div class="spinner"></div>
+
+    <b id="loadingText">
+        Menghubungkan...
+    </b>
+
+</div>
+
+
+<div id="toast" class="toast"></div>
+
+</div>
+
+
+<script>
+/* =========================================================
+   MINZX CHAT CLIENT
+========================================================= */
+
+let socket = null;
+
+let myUser = null;
+let users = [];
+let statuses = [];
+
+let currentChat = null;
+
+let chatStores = {};
+
+let typingTimer = null;
+
+
+/* =========================================================
+   SERVER URL
+========================================================= */
+
+function getDefaultServer(){
+
+    const saved = localStorage.getItem("minzx_server");
+
+    if(saved){
+        return saved;
+    }
+
+    /*
+      Jika HTML dibuka melalui server.js:
+      http://IP:3001
+    */
+
+    if(
+        location.protocol === "http:" ||
+        location.protocol === "https:"
+    ){
+        return location.origin;
+    }
+
+    /*
+      Jika HTML dibuka langsung dari file:
+      ubah alamat ini ke IP HP yang menjalankan server.js
+    */
+
+    return "http://127.0.0.1:3001";
+}
+
+let serverBaseUrl = getDefaultServer();
+
+function normalizeServer(url){
+
+    url = String(url || "").trim();
+
+    if(!url){
+        return "";
+    }
+
+    if(!/^https?:\/\//i.test(url)){
+        url = "http://" + url;
+    }
+
+    return url.replace(/\/+$/,"");
+}
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+    serverBaseUrl = normalizeServer(serverBaseUrl);
+
+    updateServerText();
+
+    loadSettings();
+
+    checkServer();
+    checkMediaSupport();
+
+});
+
+
+/* =========================================================
+   SERVER
+========================================================= */
+
+function updateServerText(){
+
+    document.getElementById("serverText").textContent =
+        serverBaseUrl;
+
+    document.getElementById("profileServer").textContent =
+        serverBaseUrl;
+}
+
+
+async function checkServer(){
+
+    try{
+
+        const response = await fetch(
+            serverBaseUrl + "/api/health",
+            {
+                method:"GET",
+                cache:"no-store"
+            }
+        );
+
+        if(!response.ok){
+            throw new Error("Server error");
+        }
+
+        const data = await response.json();
+
+        setServerOnline(true);
+
+        return data;
+
+    }catch(error){
+
+        setServerOnline(false);
+
+        return null;
+
+    }
+
+}
+
+
+function setServerOnline(state){
+
+    const dot = document.getElementById("serverDot");
+    const text = document.getElementById("serverStatus");
+
+    if(state){
+
+        dot.classList.add("online");
+
+        text.textContent = "Online";
+
+    }else{
+
+        dot.classList.remove("online");
+
+        text.textContent = "Offline";
+
+    }
+
+}
+
+
+/* =========================================================
+   REGISTER
+========================================================= */
+
+async function register(){
+
+    const username =
+        document.getElementById("usernameInput").value.trim();
+
+    const password =
+        document.getElementById("passwordInput").value;
+
+    if(!username || !password){
+
+        toast("Username dan password wajib diisi");
+
+        return;
+    }
+
+    if(username.length < 3){
+
+        toast("Username minimal 3 karakter");
+
+        return;
+    }
+
+    if(password.length < 4){
+
+        toast("Password minimal 4 karakter");
+
+        return;
+    }
+
+    loading(true,"Membuat akun...");
+
+    try{
+
+        const response = await fetch(
+            serverBaseUrl + "/api/register",
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+                    username,
+                    password
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                data.error ||
+                "Gagal membuat akun"
+            );
+
+        }
+
+        toast("Akun berhasil dibuat");
+
+        document.getElementById("passwordInput").value = "";
+
+    }catch(error){
+
+        toast(error.message);
+
+    }finally{
+
+        loading(false);
+
+    }
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+async function login(){
+
+    const username =
+        document.getElementById("usernameInput").value.trim();
+
+    const password =
+        document.getElementById("passwordInput").value;
+
+    if(!username || !password){
+
+        toast("Username dan password wajib diisi");
+
+        return;
+    }
+
+    loading(true,"Memeriksa akun...");
+
+    try{
+
+        const response = await fetch(
+            serverBaseUrl + "/api/login",
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+                    username,
+                    password
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                data.error ||
+                "Login gagal"
+            );
+
+        }
+
+        myUser = data.user || {
+            username:username
+        };
+
+        localStorage.setItem(
+            "minzx_user",
+            JSON.stringify(myUser)
+        );
+
+        document.getElementById("passwordInput").value = "";
+
+        await connectSocket();
+
+        await loadUsers();
+
+        await loadStatuses();
+
+        showHome();
+
+        toast("Login berhasil");
+
+    }catch(error){
+
+        console.error(error);
+
+        toast(
+            "Gagal login: " +
+            error.message
+        );
+
+    }finally{
+
+        loading(false);
+
+    }
+
+}
+
+
+/* =========================================================
+   SOCKET
+========================================================= */
+
+function connectSocket(){
+
+    return new Promise((resolve,reject)=>{
+
+        if(socket){
+
+            try{
+                socket.disconnect();
+            }catch(e){}
+
+        }
+
+        socket = io(serverBaseUrl,{
+            transports:["websocket","polling"],
+            reconnection:true,
+            reconnectionAttempts:10,
+            timeout:10000
+        });
+
+
+        socket.on("connect",()=>{
+
+            setServerOnline(true);
+
+            /*
+              Kompatibel dengan server sebelumnya.
+            */
+
+            socket.emit(
+                "register_user",
+                myUser.username
+            );
+
+            /*
+              Jika server versi baru menggunakan login_socket,
+              event ini juga dikirim.
+            */
+
+            socket.emit(
+                "login_socket",
+                {
+                    username:myUser.username
+                }
+            );
+
+            resolve();
+
+        });
+
+
+        socket.on("connect_error",(error)=>{
+
+            console.error(
+                "Socket error:",
+                error
+            );
+
+            setServerOnline(false);
+
+            reject(
+                new Error(
+                    "Server tidak dapat dihubungi"
+                )
+            );
+
+        });
+
+
+        socket.on("disconnect",()=>{
+
+            setServerOnline(false);
+
+        });
+
+
+        socket.on("update_contacts",(list)=>{
+
+            users = Array.isArray(list)
+                ? list
+                : [];
+
+            renderUsers();
+            renderSearch();
+            renderChats();
+
+        });
+
+
+        socket.on("users_list",(list)=>{
+
+            users = Array.isArray(list)
+                ? list
+                : [];
+
+            renderUsers();
+            renderSearch();
+            renderChats();
+
+        });
+
+
+        socket.on("receive_message",(message)=>{
+
+            receiveMessage(message);
+
+        });
+
+
+        socket.on("message",(message)=>{
+
+            receiveMessage(message);
+
+        });
+
+
+        socket.on("new_message",(message)=>{
+
+            receiveMessage(message);
+
+        });
+
+
+        socket.on("new_status",()=>{
+
+            loadStatuses();
+
+        });
+
+
+        socket.on("status_created",()=>{
+
+            loadStatuses();
+
+        });
+
+
+        socket.on("user_online",(username)=>{
+
+            setUserOnline(username,true);
+
+        });
+
+
+        socket.on("user_offline",(username)=>{
+
+            setUserOnline(username,false);
+
+        });
+
+
+        socket.on("typing",(data)=>{
+
+            if(!currentChat){
+                return;
+            }
+
+            if(
+                data &&
+                (
+                    data.username === currentChat ||
+                    data.sender === currentChat
+                )
+            ){
+
+                document.getElementById(
+                    "chatStatus"
+                ).textContent =
+                    "sedang mengetik...";
+
+            }
+
+        });
+
+
+        socket.on("stop_typing",(data)=>{
+
+            if(!currentChat){
+                return;
+            }
+
+            if(
+                data &&
+                (
+                    data.username === currentChat ||
+                    data.sender === currentChat
+                )
+            ){
+
+                updateChatStatus();
+
+            }
+
+        });
+
+    });
+
+}
+
+
+/* =========================================================
+   USERS
+========================================================= */
+
+async function loadUsers(){
+
+    try{
+
+        const response = await fetch(
+            serverBaseUrl +
+            "/api/users"
+        );
+
+        if(!response.ok){
+            return;
+        }
+
+        const data = await response.json();
+
+        users =
+            data.users ||
+            data ||
+            [];
+
+        users = users.filter(
+            u =>
+                getUsername(u) !==
+                myUser.username
+        );
+
+        renderUsers();
+        renderSearch();
+
+    }catch(error){
+
+        console.log(error);
+
+    }
+
+}
+
+
+function getUsername(user){
+
+    if(typeof user === "string"){
+        return user;
+    }
+
+    return (
+        user.username ||
+        user.name ||
+        user.tag ||
+        ""
+    );
+
+}
+
+
+function getOnline(user){
+
+    if(typeof user === "string"){
+        return false;
+    }
+
+    return !!(
+        user.online ||
+        user.isOnline
+    );
+
+}
+
+
+function setUserOnline(username,state){
+
+    users = users.map(user=>{
+
+        if(getUsername(user) === username){
+
+            if(typeof user === "object"){
+                user.online = state;
+            }
+
+        }
+
+        return user;
+
+    });
+
+    renderUsers();
+    renderSearch();
+    renderChats();
+
+    if(currentChat === username){
+
+        updateChatStatus();
+
+    }
+
+}
+
+
+/* =========================================================
+   FOLLOW
+========================================================= */
+
+async function followUser(username){
+
+    try{
+
+        const response = await fetch(
+            serverBaseUrl + "/api/follow",
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+                    follower:myUser.username,
+                    following:username
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                data.error ||
+                "Gagal follow"
+            );
+
+        }
+
+        toast(
+            data.message ||
+            "Berhasil follow @" + username
+        );
+
+    }catch(error){
+
+        /*
+          Fallback untuk server lama
+        */
+
+        if(socket){
+
+            socket.emit(
+                "follow_user",
+                {
+                    follower:myUser.username,
+                    following:username
+                }
+            );
+
+            toast(
+                "Follow @" + username
+            );
+
+        }else{
+
+            toast(error.message);
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   RENDER USERS
+========================================================= */
+
+function renderUsers(){
+
+    const box =
+        document.getElementById("usersList");
+
+    if(!box){
+        return;
+    }
+
+    const query =
+        (
+            document.getElementById("homeSearch")?.value ||
+            ""
+        ).toLowerCase();
+
+    let list = users.filter(user=>{
+
+        const username =
+            getUsername(user);
+
+        if(!username){
+            return false;
+        }
+
+        if(
+            username ===
+            myUser?.username
+        ){
+            return false;
+        }
+
+        return username
+            .toLowerCase()
+            .includes(query);
+
+    });
+
+    if(!list.length){
+
+        box.innerHTML =
+            `<div class="empty">
+                Belum ada pengguna lain.
+            </div>`;
+
+        return;
+
+    }
+
+    box.innerHTML =
+        list.map(user=>{
+
+            const username =
+                getUsername(user);
+
+            const online =
+                getOnline(user);
+
+            const letter =
+                username
+                    .charAt(0)
+                    .toUpperCase();
+
+            return `
+            <div class="user-card">
+
+                <div class="avatar">
+                    ${escapeHTML(letter)}
+                </div>
+
+                <div class="user-info"
+                     onclick="openChat('${escapeAttr(username)}')">
+
+                    <div class="user-name">
+                        @${escapeHTML(username)}
+                    </div>
+
+                    <div class="user-sub ${
+                        online ? "online":"offline"
+                    }">
+                        ${online ? "● Online":"○ Offline"}
+                    </div>
+
+                </div>
+
+                <button
+                    class="btn"
+                    style="padding:6px 8px"
+                    onclick="followUser('${escapeAttr(username)}')">
+                    + Follow
+                </button>
+
+            </div>
+            `;
+
+        }).join("");
+
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+function renderSearch(){
+
+    const box =
+        document.getElementById("searchResults");
+
+    if(!box){
+        return;
+    }
+
+    const query =
+        (
+            document.getElementById("searchInput")?.value ||
+            ""
+        ).toLowerCase();
+
+    const list =
+        users.filter(user=>{
+
+            const username =
+                getUsername(user);
+
+            return username &&
+                username !== myUser?.username &&
+                username.toLowerCase()
+                    .includes(query);
+
+        });
+
+    if(!list.length){
+
+        box.innerHTML =
+            `<div class="empty">
+                Pengguna tidak ditemukan.
+            </div>`;
+
+        return;
+
+    }
+
+    box.innerHTML =
+        list.map(user=>{
+
+            const username =
+                getUsername(user);
+
+            return `
+            <div class="user-card">
+
+                <div class="avatar">
+                    ${escapeHTML(
+                        username.charAt(0).toUpperCase()
+                    )}
+                </div>
+
+                <div class="user-info"
+                     onclick="openChat('${escapeAttr(username)}')">
+
+                    <div class="user-name">
+                        @${escapeHTML(username)}
+                    </div>
+
+                    <div class="user-sub">
+                        ${getOnline(user)
+                            ? "Online"
+                            : "Offline"}
+                    </div>
+
+                </div>
+
+                <button
+                    class="btn"
+                    style="padding:6px 8px"
+                    onclick="followUser('${escapeAttr(username)}')">
+                    Follow
+                </button>
+
+            </div>
+            `;
+
+        }).join("");
+
+}
+
+
+/* =========================================================
+   CHAT
+========================================================= */
+
+async function openChat(username){
+
+    currentChat = username;
+
+    document.getElementById(
+        "chatName"
+    ).textContent =
+        "@" + username;
+
+    document.getElementById(
+        "chatAvatar"
+    ).textContent =
+        username.charAt(0).toUpperCase();
+
+    updateChatStatus();
+
+    showScreen("chatScreen");
+
+    await loadMessages(username);
+
+    setTimeout(()=>{
+        scrollChat();
+    },50);
+
+}
+
+
+function closeChat(){
+
+    currentChat = null;
+
+    showChats();
+
+}
+
+
+function updateChatStatus(){
+
+    const user =
+        users.find(
+            u => getUsername(u) === currentChat
+        );
+
+    const online =
+        user ? getOnline(user) : false;
+
+    document.getElementById(
+        "chatStatus"
+    ).textContent =
+        online ? "Online" : "Offline";
+
+}
+
+
+async function loadMessages(username){
+
+    const box =
+        document.getElementById("chatBody");
+
+    box.innerHTML =
+        `<div class="empty">
+            Memuat pesan...
+        </div>`;
+
+    try{
+
+        const url =
+            serverBaseUrl +
+            "/api/messages/" +
+            encodeURIComponent(username) +
+            "?me=" +
+            encodeURIComponent(myUser.username);
+
+        const response =
+            await fetch(url);
+
+        if(!response.ok){
+            throw new Error();
+        }
+
+        const data =
+            await response.json();
+
+        const messages =
+            data.messages ||
+            data ||
+            [];
+
+        chatStores[username] =
+            messages;
+
+        renderChat();
+
+    }catch(error){
+
+        /*
+          Jika server belum punya endpoint history,
+          gunakan pesan lokal.
+        */
+
+        if(!chatStores[username]){
+            chatStores[username] = [];
+        }
+
+        renderChat();
+
+    }
+
+}
+
+
+function renderChat(){
+
+    const box =
+        document.getElementById("chatBody");
+
+    const messages =
+        chatStores[currentChat] || [];
+
+    if(!messages.length){
+
+        box.innerHTML =
+            `<div class="empty">
+                Belum ada pesan.<br>
+                Mulai percakapan.
+            </div>`;
+
+        return;
+
+    }
+
+    box.innerHTML =
+        messages.map(message=>{
+
+            const sender =
+                message.sender ||
+                message.from ||
+                "";
+
+            const text =
+                message.text ||
+                message.message ||
+                "";
+
+            const mine =
+                sender === myUser.username;
+
+            const time =
+                message.time ||
+                message.createdAt ||
+                Date.now();
+
+            return `
+            <div class="msg ${mine ? "mine":""}">
+
+                <div>
+                    ${escapeHTML(text)}
+                </div>
+
+                <div class="msg-time">
+                    ${formatTime(time)}
+                    ${mine ? " ✓✓" : ""}
+                </div>
+
+            </div>
+            `;
+
+        }).join("");
+
+}
+
+
+function receiveMessage(message){
+
+    if(!message){
+        return;
+    }
+
+    const sender =
+        message.sender ||
+        message.from ||
+        "";
+
+    const receiver =
+        message.receiver ||
+        message.to ||
+        "";
+
+    const other =
+        sender === myUser.username
+            ? receiver
+            : sender;
+
+    if(!other){
+        return;
+    }
+
+    if(!chatStores[other]){
+        chatStores[other] = [];
+    }
+
+    /*
+      Hindari pesan dobel.
+    */
+
+    const id =
+        message.id ||
+        (
+            sender +
+            "_" +
+            receiver +
+            "_" +
+            message.text +
+            "_" +
+            message.createdAt
+        );
+
+    const exists =
+        chatStores[other].some(
+            m => (
+                m.id &&
+                m.id === id
+            )
+        );
+
+    if(!exists){
+
+        message.id = id;
+
+        chatStores[other].push(
+            message
+        );
+
+    }
+
+    renderChats();
+
+    if(currentChat === other){
+
+        renderChat();
+
+        scrollChat();
+
+    }
+
+}
+
+
+function sendMessage(){
+
+    if(!socket){
+
+        toast("Belum terhubung ke server");
+
+        return;
+
+    }
+
+    if(!currentChat){
+
+        return;
+
+    }
+
+    const input =
+        document.getElementById(
+            "messageInput"
+        );
+
+    const text =
+        input.value.trim();
+
+    if(!text){
+        return;
+    }
+
+    const message = {
+
+        sender:myUser.username,
+
+        receiver:currentChat,
+
+        text:text,
+
+        createdAt:Date.now()
+
+    };
+
+    /*
+      Server utama.
+    */
+
+    socket.emit(
+        "send_message",
+        message
+    );
+
+    /*
+      Tampilkan langsung agar terasa realtime.
+    */
+
+    if(!chatStores[currentChat]){
+        chatStores[currentChat] = [];
+    }
+
+    chatStores[currentChat].push(
+        message
+    );
+
+    input.value = "";
+
+    renderChat();
+
+    scrollChat();
+
+}
+
+
+function messageKey(event){
+
+    const enterSend =
+        getSetting(
+            "enterSend",
+            true
+        );
+
+    if(
+        event.key === "Enter" &&
+        !event.shiftKey &&
+        enterSend
+    ){
+
+        event.preventDefault();
+
+        sendMessage();
+
+    }
+
+}
+
+
+function typingChanged(){
+
+    if(!socket || !currentChat){
+        return;
+    }
+
+    if(
+        getSetting(
+            "hideTyping",
+            false
+        )
+    ){
+        return;
+    }
+
+    socket.emit(
+        "typing",
+        {
+            username:myUser.username,
+            sender:myUser.username,
+            receiver:currentChat
+        }
+    );
+
+    clearTimeout(typingTimer);
+
+    typingTimer =
+        setTimeout(()=>{
+
+            socket.emit(
+                "stop_typing",
+                {
+                    username:myUser.username,
+                    sender:myUser.username,
+                    receiver:currentChat
+                }
+            );
+
+        },1000);
+
+}
+
+
+function renderChats(){
+
+    const box =
+        document.getElementById("chatList");
+
+    if(!box){
+        return;
+    }
+
+    const query =
+        (
+            document.getElementById("chatSearch")?.value ||
+            ""
+        ).toLowerCase();
+
+    const names =
+        Object.keys(chatStores)
+            .filter(name =>
+                name.toLowerCase()
+                    .includes(query)
+            );
+
+    if(!names.length){
+
+        box.innerHTML =
+            `<div class="empty">
+                Belum ada percakapan.
+            </div>`;
+
+        return;
+
+    }
+
+    box.innerHTML =
+        names.map(name=>{
+
+            const messages =
+                chatStores[name] || [];
+
+            const last =
+                messages[messages.length-1];
+
+            return `
+            <div
+                class="user-card"
+                onclick="openChat('${escapeAttr(name)}')">
+
+                <div class="avatar">
+                    ${escapeHTML(
+                        name.charAt(0).toUpperCase()
+                    )}
+                </div>
+
+                <div class="user-info">
+
+                    <div class="user-name">
+                        @${escapeHTML(name)}
+                    </div>
+
+                    <div class="user-sub">
+                        ${escapeHTML(
+                            last?.text ||
+                            "Belum ada pesan"
+                        )}
+                    </div>
+
+                </div>
+
+            </div>
+            `;
+
+        }).join("");
+
+}
+
+
+function scrollChat(){
+
+    const box =
+        document.getElementById(
+            "chatBody"
+        );
+
+    box.scrollTop =
+        box.scrollHeight;
+
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+function openAddStatus(){
+
+    document.getElementById(
+        "statusModal"
+    ).classList.add("show");
+
+}
+
+
+/* =========================================================
+   DEVICE MEDIA / PERMISSIONS
+========================================================= */
+
+function setPermissionStatus(message, type="") {
+    const el = document.getElementById("permissionStatus");
+    if(!el) return;
+    el.className = "permission-status" + (type ? " " + type : "");
+    el.textContent = message;
+}
+
+async function requestCameraPermission(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        setPermissionStatus("Kamera tidak tersedia di WebView/browser ini. Gunakan tombol FOTO untuk membuka kamera Android.", "permission-warn");
+        openCameraPhoto();
+        return false;
+    }
+    try{
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video:{facingMode:{ideal:"environment"}},
+            audio:false
+        });
+        stream.getTracks().forEach(t=>t.stop());
+        setPermissionStatus("Izin kamera berhasil diberikan.", "permission-ok");
+        toast("Izin kamera OK");
+        return true;
+    }catch(error){
+        console.log("Camera permission:", error);
+        setPermissionStatus("Izin kamera ditolak/tidak tersedia. Jika muncul peringatan Android tentang overlay, tutup bubble/overlay aplikasi lain lalu coba lagi.", "permission-warn");
+        toast("Izin kamera belum diberikan");
+        return false;
+    }
+}
+
+async function requestMicrophonePermission(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        setPermissionStatus("Mikrofon tidak tersedia di WebView/browser ini.", "permission-warn");
+        return false;
+    }
+    try{
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video:false,
+            audio:true
+        });
+        stream.getTracks().forEach(t=>t.stop());
+        setPermissionStatus("Izin mikrofon berhasil diberikan.", "permission-ok");
+        toast("Izin mikrofon OK");
+        return true;
+    }catch(error){
+        console.log("Microphone permission:", error);
+        setPermissionStatus("Izin mikrofon ditolak/tidak tersedia. Cek izin aplikasi Android.", "permission-warn");
+        toast("Izin mikrofon belum diberikan");
+        return false;
+    }
+}
+
+async function requestMediaPermissions(){
+    const camera = await requestCameraPermission();
+    const mic = await requestMicrophonePermission();
+    if(camera && mic){
+        setPermissionStatus("Kamera dan mikrofon siap digunakan.", "permission-ok");
+    }
+}
+
+function openCameraPhoto(){
+    const input = document.getElementById("cameraPhotoInput");
+    if(input) input.click();
+}
+
+function openCameraVideo(){
+    const input = document.getElementById("cameraVideoInput");
+    if(input) input.click();
+}
+
+function openMediaPicker(){
+    const input = document.getElementById("statusFile");
+    if(input) input.click();
+}
+
+function useCapturedFile(input){
+    if(!input || !input.files || !input.files[0]) return;
+    const target = document.getElementById("statusFile");
+    try{
+        const dt = new DataTransfer();
+        dt.items.add(input.files[0]);
+        target.files = dt.files;
+        toast("Media siap diupload");
+    }catch(error){
+        console.log("DataTransfer error:", error);
+        toast("Media dipilih. Jika tidak terbaca, pilih lewat tombol FILE.");
+    }
+}
+
+function checkMediaSupport(){
+    const secure = window.isSecureContext || location.hostname === "localhost" || location.hostname === "127.0.0.1";
+    if(!secure){
+        setPermissionStatus("Kamera/mikrofon memerlukan konteks aman. Gunakan server localhost/127.0.0.1 atau HTTPS.", "permission-warn");
+    }else if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+        setPermissionStatus("Siap. Tekan KAMERA atau MIC untuk meminta izin Android.");
+    }else{
+        setPermissionStatus("WebView tidak menyediakan getUserMedia. Tombol FOTO/VIDEO tetap dapat membuka kamera Android jika APK mendukung file chooser.", "permission-warn");
+    }
+}
+
+async function uploadStatus(){
+
+    const text =
+        document.getElementById(
+            "statusText"
+        ).value.trim();
+
+    const file =
+        document.getElementById(
+            "statusFile"
+        ).files[0];
+
+    if(!text && !file){
+
+        toast("Isi teks atau pilih foto/video dari kamera atau file");
+
+        return;
+
+    }
+
+    const form =
+        new FormData();
+
+    form.append(
+        "username",
+        myUser.username
+    );
+
+    form.append(
+        "text",
+        text
+    );
+
+    if(file){
+
+        form.append(
+            "media",
+            file
+        );
+
+    }
+
+    loading(true,"Mengupload status...");
+
+    try{
+
+        const response =
+            await fetch(
+                serverBaseUrl +
+                "/api/upload-status",
+                {
+                    method:"POST",
+                    body:form
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                data.error ||
+                "Upload gagal"
+            );
+
+        }
+
+        closeModal("statusModal");
+
+        document.getElementById(
+            "statusText"
+        ).value = "";
+
+        document.getElementById(
+            "statusFile"
+        ).value = "";
+
+        await loadStatuses();
+
+        toast("Status berhasil dibuat");
+
+    }catch(error){
+
+        toast(error.message);
+
+    }finally{
+
+        loading(false);
+
+    }
+
+}
+
+
+async function loadStatuses(){
+
+    try{
+
+        const response =
+            await fetch(
+                serverBaseUrl +
+                "/api/statuses",
+                {
+                    cache:"no-store"
+                }
+            );
+
+        if(!response.ok){
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        statuses =
+            data.statuses ||
+            data ||
+            [];
+
+        renderStatuses();
+
+    }catch(error){
+
+        console.log(
+            "Status error:",
+            error
+        );
+
+    }
+
+}
+
+
+function renderStatuses(){
+
+    const home =
+        document.getElementById(
+            "statusList"
+        );
+
+    const all =
+        document.getElementById(
+            "allStatusList"
+        );
+
+    const html =
+        statuses.length
+            ? statuses.map(renderStatusCard).join("")
+            : `<div class="empty">
+                 Belum ada status.
+               </div>`;
+
+    if(home){
+        home.innerHTML = html;
+    }
+
+    if(all){
+        all.innerHTML = html;
+    }
+
+}
+
+
+function renderStatusCard(status){
+
+    const username =
+        status.username ||
+        status.user ||
+        "unknown";
+
+    const text =
+        status.text ||
+        "";
+
+    const media =
+        status.mediaUrl ||
+        status.media ||
+        "";
+
+    let mediaHTML = "";
+
+    if(media){
+
+        const url =
+            media.startsWith("http")
+                ? media
+                : serverBaseUrl + media;
+
+        const lower =
+            media.toLowerCase();
+
+        if(
+            lower.includes(".mp4") ||
+            lower.includes(".webm") ||
+            lower.includes(".mov")
+        ){
+
+            mediaHTML = `
+                <video
+                    class="status-media"
+                    controls
+                    playsinline
+                    src="${escapeAttr(url)}">
+                </video>
+            `;
+
+        }else{
+
+            mediaHTML = `
+                <img
+                    class="status-media"
+                    src="${escapeAttr(url)}"
+                    alt="status">
+            `;
+
+        }
+
+    }
+
+    return `
+    <div class="status-card">
+
+        <div class="status-top">
+
+            <b>@${escapeHTML(username)}</b>
+
+            <small>
+                ${formatTime(
+                    status.createdAt ||
+                    status.time ||
+                    Date.now()
+                )}
+            </small>
+
+        </div>
+
+        ${
+            text
+            ? `<div style="margin-top:8px">
+                ${escapeHTML(text)}
+               </div>`
+            : ""
+        }
+
+        ${mediaHTML}
+
+    </div>
+    `;
+
+}
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+function openSettings(){
+
+    showScreen("settingsScreen");
+
+}
+
+
+function loadSettings(){
+
+    const enter =
+        getSetting(
+            "enterSend",
+            true
+        );
+
+    const typing =
+        getSetting(
+            "hideTyping",
+            false
+        );
+
+    const read =
+        getSetting(
+            "readReceipts",
+            true
+        );
+
+    document.getElementById(
+        "enterToggle"
+    ).classList.toggle(
+        "on",
+        enter
+    );
+
+    document.getElementById(
+        "typingToggle"
+    ).classList.toggle(
+        "on",
+        typing
+    );
+
+    document.getElementById(
+        "readToggle"
+    ).classList.toggle(
+        "on",
+        read
+    );
+
+}
+
+
+function getSetting(key,defaultValue){
+
+    const value =
+        localStorage.getItem(
+            "minzx_" + key
+        );
+
+    if(value === null){
+        return defaultValue;
+    }
+
+    return value === "true";
+
+}
+
+
+function toggleSetting(element,key){
+
+    const current =
+        getSetting(key,false);
+
+    const next =
+        !current;
+
+    localStorage.setItem(
+        "minzx_" + key,
+        next
+    );
+
+    element.classList.toggle(
+        "on",
+        next
+    );
+
+}
+
+
+function setTheme(theme){
+
+    const root =
+        document.documentElement;
+
+    if(theme === "yellow"){
+
+        root.style.setProperty(
+            "--accent",
+            "#dfff00"
+        );
+
+        root.style.setProperty(
+            "--bg",
+            "#e9e6df"
+        );
+
+    }
+
+    if(theme === "green"){
+
+        root.style.setProperty(
+            "--accent",
+            "#00ff66"
+        );
+
+        root.style.setProperty(
+            "--bg",
+            "#e2e8e2"
+        );
+
+    }
+
+    if(theme === "purple"){
+
+        root.style.setProperty(
+            "--accent",
+            "#d58cff"
+        );
+
+        root.style.setProperty(
+            "--bg",
+            "#e8e2ec"
+        );
+
+    }
+
+    if(theme === "dark"){
+
+        root.style.setProperty(
+            "--accent",
+            "#dfff00"
+        );
+
+        root.style.setProperty(
+            "--bg",
+            "#303030"
+        );
+
+    }
+
+    localStorage.setItem(
+        "minzx_theme",
+        theme
+    );
+
+}
+
+
+function loadTheme(){
+
+    const theme =
+        localStorage.getItem(
+            "minzx_theme"
+        ) || "yellow";
+
+    setTheme(theme);
+
+}
+
+
+/* =========================================================
+   USERNAME
+========================================================= */
+
+async function changeUsername(){
+
+    const oldName =
+        myUser.username;
+
+    const newName =
+        prompt(
+            "Username baru:",
+            oldName
+        );
+
+    if(!newName ||
+       newName === oldName){
+        return;
+    }
+
+    try{
+
+        const response =
+            await fetch(
+                serverBaseUrl +
+                "/api/change-username",
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+                        oldUsername:oldName,
+                        newUsername:newName
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if(!response.ok){
+
+            throw new Error(
+                data.message ||
+                data.error ||
+                "Gagal mengubah username"
+            );
+
+        }
+
+        myUser.username =
+            newName;
+
+        localStorage.setItem(
+            "minzx_user",
+            JSON.stringify(myUser)
+        );
+
+        document.getElementById(
+            "profileName"
+        ).textContent =
+            "@" + newName;
+
+        toast("Username berhasil diubah");
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+
+/* =========================================================
+   SERVER MODAL
+========================================================= */
+
+function openServerModal(){
+
+    document.getElementById(
+        "serverInput"
+    ).value =
+        serverBaseUrl;
+
+    document.getElementById(
+        "serverModal"
+    ).classList.add("show");
+
+}
+
+
+function saveServer(){
+
+    const value =
+        normalizeServer(
+            document.getElementById(
+                "serverInput"
+            ).value
+        );
+
+    if(!value){
+
+        toast("Alamat server kosong");
+
+        return;
+
+    }
+
+    serverBaseUrl = value;
+
+    localStorage.setItem(
+        "minzx_server",
+        serverBaseUrl
+    );
+
+    updateServerText();
+
+    closeModal("serverModal");
+
+    checkServer();
+
+    toast(
+        "Server disimpan"
+    );
+
+}
+
+
+function useCurrentServer(){
+
+    if(
+        location.protocol !== "http:" &&
+        location.protocol !== "https:"
+    ){
+
+        toast(
+            "HTML sedang dibuka dari file"
+        );
+
+        return;
+
+    }
+
+    serverBaseUrl =
+        location.origin;
+
+    localStorage.setItem(
+        "minzx_server",
+        serverBaseUrl
+    );
+
+    updateServerText();
+
+    closeModal("serverModal");
+
+    checkServer();
+
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+function showProfile(){
+
+    showScreen("profileScreen");
+
+    if(myUser){
+
+        document.getElementById(
+            "profileName"
+        ).textContent =
+            "@" + myUser.username;
+
+        document.getElementById(
+            "profileAvatar"
+        ).textContent =
+            myUser.username
+                .charAt(0)
+                .toUpperCase();
+
+    }
+
+    document.getElementById(
+        "profileServer"
+    ).textContent =
+        serverBaseUrl;
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function showScreen(id){
+
+    document
+        .querySelectorAll(".screen")
+        .forEach(screen=>{
+            screen.classList.remove("active");
+        });
+
+    const screen =
+        document.getElementById(id);
+
+    if(screen){
+        screen.classList.add("active");
+    }
+
+}
+
+
+function showHome(){
+
+    showScreen("homeScreen");
+
+    renderUsers();
+    loadStatuses();
+
+}
+
+
+function showChats(){
+
+    showScreen("chatListScreen");
+
+    renderChats();
+
+}
+
+
+function showSearch(){
+
+    showScreen("searchScreen");
+
+    renderSearch();
+
+}
+
+
+function showStatus(){
+
+    showScreen("statusScreen");
+
+    loadStatuses();
+
+}
+
+
+function showProfileScreen(){
+
+    showProfile();
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+function logout(){
+
+    if(socket){
+
+        try{
+
+            socket.emit(
+                "logout",
+                {
+                    username:
+                        myUser?.username
+                }
+            );
+
+            socket.disconnect();
+
+        }catch(e){}
+
+    }
+
+    myUser = null;
+
+    localStorage.removeItem(
+        "minzx_user"
+    );
+
+    chatStores = {};
+
+    currentChat = null;
+
+    document.getElementById(
+        "usernameInput"
+    ).value = "";
+
+    document.getElementById(
+        "passwordInput"
+    ).value = "";
+
+    showScreen("authScreen");
+
+    toast("Berhasil keluar");
+
+}
+
+
+/* =========================================================
+   LOCAL DATA
+========================================================= */
+
+function clearLocalData(){
+
+    if(
+        !confirm(
+            "Hapus semua data lokal MINZX CHAT?"
+        )
+    ){
+        return;
+    }
+
+    localStorage.clear();
+
+    toast(
+        "Data lokal dihapus"
+    );
+
+    setTimeout(()=>{
+        location.reload();
+    },700);
+
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+function closeModal(id){
+
+    document
+        .getElementById(id)
+        .classList.remove("show");
+
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+function loading(show,text){
+
+    const el =
+        document.getElementById(
+            "loading"
+        );
+
+    document.getElementById(
+        "loadingText"
+    ).textContent =
+        text || "Loading...";
+
+    el.classList.toggle(
+        "show",
+        show
+    );
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+let toastTimer;
+
+function toast(message){
+
+    const el =
+        document.getElementById(
+            "toast"
+        );
+
+    el.textContent =
+        message;
+
+    el.classList.add("show");
+
+    clearTimeout(toastTimer);
+
+    toastTimer =
+        setTimeout(()=>{
+            el.classList.remove("show");
+        },2500);
+
+}
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function escapeHTML(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+function escapeAttr(value){
+
+    return escapeHTML(value)
+        .replace(/`/g,"&#096;");
+
+}
+
+
+function formatTime(value){
+
+    const date =
+        new Date(value);
+
+    if(
+        Number.isNaN(
+            date.getTime()
+        )
+    ){
+        return "";
+    }
+
+    return date.toLocaleTimeString(
+        "id-ID",
+        {
+            hour:"2-digit",
+            minute:"2-digit"
+        }
+    );
+
+}
+
+
+/* =========================================================
+   AUTO LOGIN
+========================================================= */
+
+async function autoLogin(){
+
+    const saved =
+        localStorage.getItem(
+            "minzx_user"
+        );
+
+    if(!saved){
+        return;
+    }
+
+    try{
+
+        myUser =
+            JSON.parse(saved);
+
+        if(
+            !myUser ||
+            !myUser.username
+        ){
+            return;
+        }
+
+        const health =
+            await checkServer();
+
+        if(!health){
+            return;
+        }
+
+        await connectSocket();
+
+        await loadUsers();
+
+        await loadStatuses();
+
+        showHome();
+
+    }catch(error){
+
+        console.log(
+            "Auto login gagal:",
+            error
+        );
+
+        myUser = null;
+
+    }
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+loadTheme();
+
+setTimeout(()=>{
+    autoLogin();
+},300);
+
+/* =========================================================
+   MINZX CHAT — GACOR EXTENSIONS
+   Semua fitur frontend tetap kompatibel dengan API server lama.
+========================================================= */
+
+let followedUsers = JSON.parse(localStorage.getItem('minzx_following') || '[]');
+let blockedUsers = JSON.parse(localStorage.getItem('minzx_blocked') || '[]');
+let globalMessages = JSON.parse(localStorage.getItem('minzx_global_messages') || '[]');
+
+function isFollowing(username){ return followedUsers.includes(username); }
+function saveFollowing(){ localStorage.setItem('minzx_following', JSON.stringify(followedUsers)); }
+function saveBlocked(){ localStorage.setItem('minzx_blocked', JSON.stringify(blockedUsers)); }
+
+function toggleFollow(username){
+    if(!username || username === myUser?.username) return;
+    if(isFollowing(username)){
+        followedUsers = followedUsers.filter(x=>x!==username);
+        toast('Berhenti mengikuti @'+username);
+    }else{
+        followedUsers.push(username);
+        toast('✓ Sekarang mengikuti @'+username);
+    }
+    saveFollowing(); renderUsers(); renderSearch();
+    const m=document.getElementById('profileUserModal');
+    if(m?.classList.contains('show')) openUserProfile(username);
+}
+
+async function followUser(username){
+    if(!myUser) return toast('Silakan login dulu');
+    try{
+        const r=await fetch(serverBaseUrl+'/api/follow',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({follower:myUser.username,following:username})});
+        const d=await r.json().catch(()=>({}));
+        if(!r.ok) throw new Error(d.message||d.error||'Gagal follow');
+    }catch(e){
+        if(socket) socket.emit('follow_user',{follower:myUser.username,following:username});
+    }
+    if(!isFollowing(username)) followedUsers.push(username);
+    saveFollowing(); renderUsers(); renderSearch(); toast('✓ @'+username+' diikuti');
+}
+
+function renderUserActions(username){
+    const following=isFollowing(username);
+    return `<div class="user-actions"><button class="quick-btn" onclick="openUserProfile('${escapeAttr(username)}')">👤</button><button class="btn ${following?'secondary':''}" style="padding:6px 8px" onclick="toggleFollow('${escapeAttr(username)}')">${following?'✓ Following':'+ Follow'}</button></div>`;
+}
+
+function renderUsers(){
+    const box=document.getElementById('usersList'); if(!box) return;
+    const q=(document.getElementById('homeSearch')?.value||'').toLowerCase();
+    const list=users.filter(u=>{const n=getUsername(u);return n&&n!==myUser?.username&&!blockedUsers.includes(n)&&n.toLowerCase().includes(q);});
+    box.innerHTML=list.length?list.map(u=>{const n=getUsername(u),on=getOnline(u);return `<div class="user-card"><div class="avatar">${escapeHTML(n.charAt(0).toUpperCase())}</div><div class="user-info" onclick="openUserProfile('${escapeAttr(n)}')"><div class="user-name">@${escapeHTML(n)}</div><div class="user-sub ${on?'online':'offline'}">${on?'● Online':'○ Offline'}</div></div>${renderUserActions(n)}</div>`}).join(''):`<div class="empty">Belum ada pengguna lain.</div>`;
+}
+
+function renderSearch(){
+    const box=document.getElementById('searchResults'); if(!box) return;
+    const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+    const list=users.filter(u=>{const n=getUsername(u);return n&&n!==myUser?.username&&!blockedUsers.includes(n)&&n.toLowerCase().includes(q);});
+    box.innerHTML=list.length?list.map(u=>{const n=getUsername(u);return `<div class="user-card"><div class="avatar">${escapeHTML(n.charAt(0).toUpperCase())}</div><div class="user-info" onclick="openUserProfile('${escapeAttr(n)}')"><div class="user-name">@${escapeHTML(n)}</div><div class="user-sub">${getOnline(u)?'● Online':'○ Offline'}</div></div>${renderUserActions(n)}</div>`}).join(''):`<div class="empty">Pengguna tidak ditemukan.</div>`;
+}
+
+function ensureProfileModal(){
+    if(document.getElementById('profileUserModal')) return;
+    const d=document.createElement('div'); d.id='profileUserModal'; d.className='modal';
+    d.innerHTML=`<div class="modal-box"><div class="modal-head"><div class="title" style="margin:0">PROFIL PENGGUNA</div><button class="close" onclick="closeModal('profileUserModal')">×</button></div><div id="userProfileContent"></div></div>`;
+    document.body.appendChild(d);
+}
+
+async function openUserProfile(username){
+    ensureProfileModal();
+    const u=users.find(x=>getUsername(x)===username)||{};
+    let profile={...u,username};
+    try{
+        const r=await fetch(serverBaseUrl+'/api/users/'+encodeURIComponent(username));
+        if(r.ok){const d=await r.json(); profile={...profile,...(d.user||d)};}
+    }catch(e){}
+    const following=isFollowing(username), online=getOnline(profile);
+    document.getElementById('userProfileContent').innerHTML=`
+      <div class="profile-mini"><div class="avatar avatar-big">${escapeHTML(username.charAt(0).toUpperCase())}</div><div><b>@${escapeHTML(username)}</b><div class="user-sub ${online?'online':'offline'}">${online?'● Online':'○ Offline'}</div></div></div>
+      <div class="profile-stats"><div><b>${profile.followersCount||profile.followers||0}</b><small>Followers</small></div><div><b>${profile.followingCount||profile.following||0}</b><small>Following</small></div></div>
+      <div class="profile-bio">${escapeHTML(profile.bio||'Akun MINZX CHAT')}</div>
+      <div class="profile-actions"><button class="btn ${following?'secondary':''}" onclick="toggleFollow('${escapeAttr(username)}')">${following?'✓ Following':'＋ Follow'}</button>${following?`<button class="btn" onclick="openChat('${escapeAttr(username)}');closeModal('profileUserModal')">💬 Chat</button>`:`<button class="btn secondary" onclick="toast('Follow @${escapeAttr(username)} dulu untuk membuka chat')">🔒 Chat</button>`}</div>
+      <button class="btn danger full" style="margin-top:9px" onclick="blockUser('${escapeAttr(username)}')">🚫 Blokir</button>`;
+    document.getElementById('profileUserModal').classList.add('show');
+}
+
+function blockUser(username){
+    if(!confirm('Blokir @'+username+'?')) return;
+    if(!blockedUsers.includes(username)) blockedUsers.push(username); saveBlocked();
+    followedUsers=followedUsers.filter(x=>x!==username); saveFollowing();
+    closeModal('profileUserModal'); renderUsers(); renderSearch(); toast('@'+username+' diblokir');
+}
+
+function showBlockedUsers(){
+    if(!blockedUsers.length){ toast('Belum ada akun yang diblokir'); return; }
+    const names=blockedUsers.map(x=>'@'+x).join(', ');
+    if(confirm('Diblokir: '+names+'\\n\\nTekan OK untuk membuka blokir semuanya.')){blockedUsers=[];saveBlocked();renderUsers();renderSearch();toast('Semua blokir dibuka');}
+}
+
+function newPrivateChat(){
+    showSearch();
+    setTimeout(()=>{const i=document.getElementById('searchInput'); if(i){i.focus(); i.placeholder='Cari username untuk chat...';}},50);
+}
+
+/* ---------------- GLOBAL CHAT ---------------- */
+function showGlobal(){ showScreen('globalScreen'); renderGlobal(); tryLoadGlobal(); }
+function globalKey(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendGlobalMessage();} }
+function renderGlobal(){
+    const box=document.getElementById('globalBody'); if(!box) return;
+    box.innerHTML=globalMessages.slice(-150).map(m=>`<div class="global-msg ${m.sender===myUser?.username?'mine':''}"><div class="global-meta">@${escapeHTML(m.sender||'user')}</div><div>${escapeHTML(m.text||'')}</div><div class="global-time">${formatTime(m.time||m.createdAt||Date.now())}</div></div>`).join('')||'<div class="empty">Belum ada pesan global.<br>Jadilah yang pertama.</div>';
+    box.scrollTop=box.scrollHeight;
+}
+async function tryLoadGlobal(){
+    try{
+        const r=await fetch(serverBaseUrl+'/api/global/messages',{cache:'no-store'});
+        if(r.ok){const d=await r.json();const list=d.messages||d||[];if(Array.isArray(list)){globalMessages=list.slice(-150);localStorage.setItem('minzx_global_messages',JSON.stringify(globalMessages));renderGlobal();}}
+    }catch(e){}
+}
+async function sendGlobalMessage(){
+    if(!myUser) return toast('Silakan login dulu');
+    const i=document.getElementById('globalInput'), t=i?.value.trim(); if(!t)return;
+    let m={sender:myUser.username,text:t,time:Date.now()};
+    try{
+        const r=await fetch(serverBaseUrl+'/api/global/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(m)});
+        if(!r.ok) throw new Error();
+        const d=await r.json().catch(()=>({})); if(d.message||d.createdAt)m={...m,...d.message};
+    }catch(e){
+        /* Server lama: event tetap dikirim agar server baru yang mendukung global bisa meneruskannya. */
+        if(socket) socket.emit('global_message',m);
+    }
+    globalMessages.push(m); globalMessages=globalMessages.slice(-150); localStorage.setItem('minzx_global_messages',JSON.stringify(globalMessages)); i.value=''; renderGlobal();
+}
+function installGlobalSocketListener(){
+    if(!socket||socket.__minzxGlobalInstalled)return; socket.__minzxGlobalInstalled=true;
+    socket.on('global_message',m=>{if(!m||!m.text)return;const key=(m.sender||'')+'|'+m.text+'|'+(m.time||m.createdAt||'');if(!globalMessages.some(x=>(x.sender||'')+'|'+x.text+'|'+(x.time||x.createdAt||'')===key)){globalMessages.push(m);globalMessages=globalMessages.slice(-150);localStorage.setItem('minzx_global_messages',JSON.stringify(globalMessages));renderGlobal();}});
+}
+const __baseConnectSocket=connectSocket;
+connectSocket=async function(){const result=await __baseConnectSocket();installGlobalSocketListener();return result;};
+
+/* ---------------- STATUS DELETE ---------------- */
+async function deleteStatus(id){
+    if(!id)return toast('Status lama tidak memiliki ID untuk dihapus');
+    if(!confirm('Hapus status ini?'))return;
+    try{
+        const r=await fetch(serverBaseUrl+'/api/statuses/'+encodeURIComponent(id),{method:'DELETE'});
+        if(!r.ok) throw new Error();
+        statuses=statuses.filter(s=>String(s.id||s._id||s.statusId)!==String(id)); renderStatuses(); toast('✓ Status dihapus dari server');
+    }catch(e){
+        toast('Server belum menyediakan API hapus status');
+    }
+}
+function renderStatusCard(status){
+    const username=status.username||status.user||'unknown', text=status.text||'', media=status.mediaUrl||status.media||'', id=status.id||status._id||status.statusId||'';
+    let mediaHTML='';
+    if(media){const url=media.startsWith('http')?media:serverBaseUrl+media;const low=media.toLowerCase();mediaHTML=(low.includes('.mp4')||low.includes('.webm')||low.includes('.mov'))?`<video class="status-media" controls playsinline src="${escapeAttr(url)}"></video>`:`<img class="status-media" src="${escapeAttr(url)}" alt="status">`;}
+    return `<div class="status-card"><div class="status-top"><b>@${escapeHTML(username)}</b><div><small>${formatTime(status.createdAt||status.time||Date.now())}</small>${username===myUser?.username&&id?`<button class="quick-btn" style="margin-left:5px;width:34px;min-width:34px;height:32px" onclick="deleteStatus('${escapeAttr(String(id))}')">🗑</button>`:''}</div></div>${text?`<div style="margin-top:8px">${escapeHTML(text)}</div>`:''}${mediaHTML}</div>`;
+}
+
+/* ---------------- SETTINGS ---------------- */
+function syncSettingToggles(){
+    [['onlineToggle','onlineStatus',true],['notifToggle','notifications',true],['soundToggle','messageSound',true],['vibrateToggle','vibration',true],['mediaToggle','autoMedia',true]].forEach(([id,key,def])=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',getSetting(key,def));});
+    const fp=document.getElementById('followPrivacy'); if(fp)fp.value=localStorage.getItem('minzx_followPrivacy')||'everyone';
+}
+function savePrivacySelect(id){const e=document.getElementById(id);if(e){localStorage.setItem('minzx_'+id,e.value);toast('✓ Privasi disimpan');}}
+function setAppPin(){
+    const current=localStorage.getItem('minzx_pin');
+    const pin=prompt(current?'PIN baru 4 angka:':'Buat PIN 4 angka:',''); if(pin===null)return;
+    if(!/^\\d{4}$/.test(pin))return toast('PIN harus tepat 4 angka');
+    localStorage.setItem('minzx_pin',pin);toast('✓ PIN aplikasi disimpan');
+}
+async function testNotification(){
+    if(!('Notification' in window))return toast('Browser/WebView tidak mendukung notifikasi web');
+    try{let p=Notification.permission;if(p==='default')p=await Notification.requestPermission();if(p==='granted'){new Notification('MINZX CHAT',{body:'Notifikasi berhasil ✓'});toast('Notifikasi aktif');}else toast('Izin notifikasi ditolak');}catch(e){toast('Notifikasi tidak tersedia di WebView ini');}
+}
+const __baseLoadSettings=loadSettings;
+loadSettings=function(){__baseLoadSettings();setTimeout(syncSettingToggles,0);};
+
+/* ---------------- PROFILE ---------------- */
+function showProfile(){
+    showScreen('profileScreen');
+    if(myUser){document.getElementById('profileName').textContent='@'+myUser.username;document.getElementById('profileAvatar').textContent=myUser.username.charAt(0).toUpperCase();}
+    document.getElementById('profileServer').textContent=serverBaseUrl;
+}
+
+/* ---------------- NAV ---------------- */
+function patchBottomNav(){
+    document.querySelectorAll('.bottom').forEach(nav=>{const b=nav.querySelectorAll('.nav');if(b.length>=5){b[2].innerHTML='🌐<br>Global';b[2].setAttribute('onclick','showGlobal()');}});
+}
+
+/* ---------------- SAFETY / LOGIN ---------------- */
+window.addEventListener('DOMContentLoaded',()=>{patchBottomNav();syncSettingToggles();});
+</script>
+
+</body>
+</html>
